@@ -1,0 +1,8 @@
+si swd
+speed 4000
+erase
+loadbin short_scanner.bin 0x08000000 SWDSelect
+r
+g
+qc
+

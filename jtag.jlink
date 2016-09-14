@@ -1,0 +1,7 @@
+connect
+erase
+loadbin diy.bin 0x00400000
+r
+g
+qc
+
