@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import subprocess
 import commands
+import subprocess
 import time
 import re
 
@@ -9,11 +9,12 @@ while True:
     pattern = re.compile('downloadFW_JTAG', re.S)
     match = re.search(pattern, output)
     if match:
-        print "program is running, no need to start"
+        #print "program is running, no need to start"
+        pass
     else:
-        print "program not run yet, now will start"
+        #print "program not run yet, now will start"
         subprocess.Popen(r'python downloadFW_JTAG.py', shell=True)
         time.sleep(5)
-    print status 
-    print output
+    #print status 
+    #print output
     time.sleep(5)

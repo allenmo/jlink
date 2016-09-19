@@ -2,7 +2,7 @@
 
 import RPi.GPIO as GPIO
 import time
-import subprocess
+#import subprocess
 import os
 import commands
 import re
