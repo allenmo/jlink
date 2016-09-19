@@ -93,7 +93,7 @@ for i in range(0,6):
     GPIO.output(readyLED, GPIO.HIGH)
     time.sleep(0.1)
 GPIO.output(readyLED, GPIO.LOW)
-pattern = re.compile('Verifying flash(.*?)100%(.*?)Done', re.S)
+pattern = re.compile('Erasing device(.*?)Verifying flash(.*?)100%(.*?)Done(.*?)Downloading file(.*?)Verifying flash(.*?)Done', re.S)
 
 GPIO.setup(startButton, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.add_event_detect(startButton, GPIO.RISING, callback=button_pressed_callback, bouncetime=400)
