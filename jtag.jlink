@@ -1,6 +1,6 @@
 connect
 erase
-loadbin diy.bin 0x00400000
+loadbin 2BIT_PANEL.bin 0x00400000
 r
 g
 qc

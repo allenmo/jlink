@@ -13,7 +13,7 @@ while True:
         pass
     else:
         #print "program not run yet, now will start"
-        subprocess.Popen(r'python downloadFW_JTAG.py', shell=True)
+        subprocess.Popen(r'python downloadFW_JTAG.py >>log.txt &', shell=True)
         time.sleep(5)
     #print status 
     #print output

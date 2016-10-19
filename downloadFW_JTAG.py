@@ -6,6 +6,7 @@ import time
 import os
 import commands
 import re
+from fw import fw
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
@@ -87,17 +88,26 @@ GPIO.output(inprocessLED, GPIO.HIGH)
 time.sleep(0.3)
 GPIO.output(readyLED, GPIO.HIGH)
 time.sleep(0.3)
-for i in range(0,6):
+the_fw = fw.Fw()
+the_fw_check_result = the_fw.if_ok_for_download()
+if the_fw_check_result == True:
+    for i in range(0,6):
+        GPIO.output(readyLED, GPIO.LOW)
+        time.sleep(0.1)
+        GPIO.output(readyLED, GPIO.HIGH)
+        time.sleep(0.1)
     GPIO.output(readyLED, GPIO.LOW)
-    time.sleep(0.1)
-    GPIO.output(readyLED, GPIO.HIGH)
-    time.sleep(0.1)
-GPIO.output(readyLED, GPIO.LOW)
-pattern = re.compile('Erasing device(.*?)Verifying flash(.*?)100%(.*?)Done(.*?)Downloading file(.*?)Verifying flash(.*?)Done', re.S)
-
-GPIO.setup(startButton, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.add_event_detect(startButton, GPIO.RISING, callback=button_pressed_callback, bouncetime=400)
-print "Waiting for start button press..."
+    pattern = re.compile('Erasing device(.*?)Verifying flash(.*?)100%(.*?)Done(.*?)Downloading file(.*?)Verifying flash(.*?)Done', re.S)
+    
+    GPIO.setup(startButton, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.add_event_detect(startButton, GPIO.RISING, callback=button_pressed_callback, bouncetime=400)
+    print "Waiting for start button press..."
+else:
+    GPIO.output(readyLED, GPIO.LOW)
+    GPIO.output(inprocessLED, GPIO.LOW)
+    GPIO.output(passLED, GPIO.LOW)
+    GPIO.output(failLED, GPIO.LOW)
+    print "fw is not ok for download, pls check config"
 
 while True:
     #print "in loop"
