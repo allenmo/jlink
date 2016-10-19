@@ -1,5 +1,6 @@
 from fw import fw
 
 kkk = fw.Fw()
-print kkk.if_ok_for_download()
+print kkk.check_network()
+#print kkk.if_ok_for_download()
 
