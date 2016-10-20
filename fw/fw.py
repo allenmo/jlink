@@ -1,5 +1,7 @@
 import urllib, urllib2, json, ConfigParser, binascii, urlparse, binascii, os, time, shutil
 import subprocess, re
+import logging
+
 class Fw(object):
     def __init__(self, ini_file_pathname='fw.ini'):
         self.ini_file_pathname = ini_file_pathname
@@ -168,6 +170,7 @@ class Fw(object):
                 fw_ok = False
                 self.debug_msg = "in case 2, local only, origine Not exist or checksum error"
         else: # check net
+            # time.sleep(2)
             if self.check_network() == "UP": # check network
                 if self.if_new_fw_available() == True: # new available
                     new_fw_file_pathname = self.download_new_fw()
@@ -175,24 +178,24 @@ class Fw(object):
                         self.write_fw_info_to_ini(self.ini_file_pathname)
                         self.mv_fw_to_sw_root(new_fw_file_pathname)
                         fw_ok = True
-                        self.debug_msg = "in case 3, check net, new available, download ok"
+                        self.debug_msg = "in case 3, check net, network ok, new available, download ok"
                     else:
                         fw_ok = False
-                        self.debug_msg = "in case 4, check net, new available, download fail or checksum error"
+                        self.debug_msg = "in case 4, check net, network ok, new available, download fail or checksum error"
                 else: # No new available
                     if self.if_local_fw_file_exist_and_correct() == True:
                         fw_ok = True
-                        self.debug_msg = "in case 5, check net, No new available, origine still ok"
+                        self.debug_msg = "in case 5, check net, network ok, No new available, origine still ok"
                     else: # origine not exist or checksum error
                         new_fw_file_pathname = self.download_new_fw() #download latest
                         if self.if_new_fw_file_exist_and_correct(new_fw_file_pathname) == True:
                            self.write_fw_info_to_ini(self.ini_file_pathname)
                            self.mv_fw_to_sw_root(new_fw_file_pathname)
                            fw_ok = True
-                           self.debug_msg = "in case 6, check net, No new available, origine Not exist or checksum error, download latest ok"
+                           self.debug_msg = "in case 6, check net, network ok, No new available, origine Not exist or checksum error, download latest ok"
                         else:
                            fw_ok = False
-                           self.debug_msg = "in case 7, check net, No new available, origine Not exist or checksum error, download latest Fail"
+                           self.debug_msg = "in case 7, check net, network ok, No new available, origine Not exist or checksum error, download latest Fail"
             else: # newwork Not ok, so use local only
                 if self.if_local_fw_file_exist_and_correct() == True:
                     fw_ok = True
@@ -201,6 +204,7 @@ class Fw(object):
                     fw_ok = False
                     self.debug_msg = "in case 9, check net but network Fail, use origine, origine Not exist or checksum error"
         print self.debug_msg
+        logging.info(self.debug_msg)
         return fw_ok
 
 if __name__ == '__main__':

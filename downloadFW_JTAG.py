@@ -7,6 +7,16 @@ import os
 import commands
 import re
 from fw import fw
+import logging
+
+logging.basicConfig(filename='fw.log', level=logging.INFO, format='[%(asctime)s] %(name)s %(levelname)s: %(message)s')
+logging.info('Started')
+logging.info('    ______            ____                      __                __') 
+logging.info('   / ____/      __   / __ \____ _      ______  / /___  ____ _____/ /') 
+logging.info('  / /_  | | /| / /  / / / / __ \ | /| / / __ \/ / __ \/ __ `/ __  / ') 
+logging.info(' / __/  | |/ |/ /  / /_/ / /_/ / |/ |/ / / / / / /_/ / /_/ / /_/ /  ') 
+logging.info('/_/     |__/|__/  /_____/\____/|__/|__/_/ /_/_/\____/\__,_/\__,_/   ') 
+                                                                              
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
@@ -88,14 +98,17 @@ GPIO.output(inprocessLED, GPIO.HIGH)
 time.sleep(0.3)
 GPIO.output(readyLED, GPIO.HIGH)
 time.sleep(0.3)
+for i in range(0,6):
+    GPIO.output(readyLED, GPIO.LOW)
+    time.sleep(0.1)
+    GPIO.output(readyLED, GPIO.HIGH)
+    time.sleep(0.1)
+
+time.sleep(5)
 the_fw = fw.Fw()
 the_fw_check_result = the_fw.if_ok_for_download()
 if the_fw_check_result == True:
-    for i in range(0,6):
-        GPIO.output(readyLED, GPIO.LOW)
-        time.sleep(0.1)
-        GPIO.output(readyLED, GPIO.HIGH)
-        time.sleep(0.1)
+    logging.info('fw ok, can download')
     GPIO.output(readyLED, GPIO.LOW)
     pattern = re.compile('Erasing device(.*?)Verifying flash(.*?)100%(.*?)Done(.*?)Downloading file(.*?)Verifying flash(.*?)Done', re.S)
     
@@ -103,6 +116,7 @@ if the_fw_check_result == True:
     GPIO.add_event_detect(startButton, GPIO.RISING, callback=button_pressed_callback, bouncetime=400)
     print "Waiting for start button press..."
 else:
+    logging.info('fw Not ok, can NOT download')
     GPIO.output(readyLED, GPIO.LOW)
     GPIO.output(inprocessLED, GPIO.LOW)
     GPIO.output(passLED, GPIO.LOW)
