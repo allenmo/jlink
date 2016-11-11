@@ -1,0 +1,175 @@
+from SimpleCV import *
+import time
+from ledDb import *
+from ledCalc import *
+
+cam = Camera(-1)
+display = Display()
+
+# suggestion Low limit calc
+def sugLow(v, leftRange=30): 
+    if v-leftRange<0:
+        return 0
+    else:
+        return v-leftRange
+# suggestion Up limit cale
+def sugUp(v, rightRange=30):
+    if v+rightRange >255:
+        return 255
+    else:
+        return v+rightRange
+
+def getLow(input, pictureValue):
+    if input == '' or input.upper() == 'Y':
+        return sugLow(pictureValue)
+    elif isinstance(eval(input), int):
+        return eval(input)
+    else:
+        return 0
+
+def getUp(input, pictureValue):
+    if input == '' or input.upper() == 'Y':
+        return sugUp(pictureValue)
+    elif isinstance(eval(input), int):
+        return eval(input)
+    else:
+        return 0
+
+def drawCircleOnLayer(layer):
+    for row in led_table:
+        center = (row[2], row[3])
+        r1 = row[4]
+        r2 = row[5]
+        if r1 > 0:
+            layer.circle(center, r1)
+        if r2 > 0:
+            layer.circle(center,r2)
+
+
+db = ledDb()
+led_table = db.selectAllLed()
+
+while display.isNotDone():
+    img = cam.getImage()
+    layer = img.dl()
+    drawCircleOnLayer(layer)
+
+    if display.mouseLeft:
+        xn = display.mouseX
+        yn = display.mouseY
+        new_circle = (xn, yn)
+        print "new circle:", new_circle
+
+        r = 6 
+        rr = 3
+        save = raw_input("Save this point to local DB for test?(y/n)")
+        if save == '' or save.upper() == 'Y' or save.upper() == 'YES':
+            # --------------------------------------------------------------
+            name = raw_input('Name of this:')
+            print "name:", name
+
+            mode = raw_input("mode [1:Circle(default),2:Ring]:")
+            if mode == '1' or mode == '' or mode.upper() == 'CIRCLE':
+                mode = 'CIRCLE'
+            elif mode == '2' or mode.upper() == 'RING':
+                mode = 'RING'
+            else:
+                mode = 'CIRCLE'
+            print 'mode:', mode
+
+            if mode == 'CIRCLE':
+                r1 = raw_input("r1 (default=%d):" %r)
+                if r1 == '':
+                    r1 = r 
+                elif isinstance(eval(r1), int):
+                    r1 = eval(r1)
+                else:
+                    r1 = r
+                print 'r1:', r1
+                r2 = 0
+                rgb1 = circleAvgRGB(img, new_circle, r1)
+                print "avgRGB in circle r=%d:" %r1, rgb1
+                rgb = rgb1
+            elif mode == 'RING':
+                r1 = raw_input("r1 (default=%d):" %r)
+                if r1 == '':
+                    r1 = r 
+                elif isinstance(eval(r1), int):
+                    r1 = eval(r1)
+                else:
+                    r1 = r
+                print 'r1:', r1
+                r2 = raw_input("r2 (default=%d):" %(r+rr))
+                if r2 == '':
+                    r2 = r+rr
+                elif isinstance(eval(r2), int):
+                    r2 = eval(r2)
+                else:
+                    r2 = r+rr
+                print 'r2:', r2
+                rgb2 = ringAvgRGB(img,new_circle, r2, r1)
+                print "avgRGB in ring(r1=%d, r2=%d):" %(r+rr,r), rgb2
+                rgb =rgb2
+
+            # make sure r1>r2
+            if r1 < r2:
+                r1,r2 = r2,r1
+
+            cs = raw_input("Color Space[1:RGB(default), 2:HSV, 3:HSL]:")
+            if cs == '1' or cs == '' or cs.upper() == 'RGB':
+                cs = 'RGB'
+            elif cs == '2' or cs.upper() == 'HSV':
+                cs = 'HSV'
+            elif cs == '3':
+                cs == 'HSL' or cs.upper() == 'HSL'
+            else:
+                cs = 'RGB'
+            print 'Color Space:', cs
+
+            if cs == 'RGB':
+                # ============ red =============
+                L1 = raw_input("Red low limit (picture value:%d) Use Suggest value=%d ?" %(rgb[0], sugLow(rgb[0])))
+                L1 = getLow(L1, rgb[0])
+                print 'Red low limit:', L1
+                U1 = raw_input("Red Up  limit(picture value:%d) Use Suggest Value=%d ?" %(rgb[0], sugUp(rgb[0])))
+                U1 = getUp(U1, rgb[0])
+                print 'Red Up  limit:', U1
+                # =========== blue =============
+                L2 = raw_input("Green low limit(picture value:%d) Use Suggest Value=%d ?" %(rgb[1], sugLow(rgb[1])))
+                L2 = getLow(L2, rgb[1])
+                print 'Green low limit:', L2
+                U2 = raw_input("Green Up  limit(picture value:%d) Use Suggest Value=%d ?" %(rgb[1], sugUp(rgb[1])))
+                U2 = getUp(U2, rgb[1])
+                print 'Green Up  limit:', U2
+                # =========== green ============
+                L3 = raw_input("Blue low limit(picture value:%d) Use Suggest Value=%d ?" %(rgb[2], sugLow(rgb[2])))
+                L3 = getLow(L3, rgb[2])
+                print 'Blue low limit:', L3
+                U3 = raw_input("Blue Up  limit(picture value:%d) Use Suggest Value=%d ?" %(rgb[2], sugUp(rgb[2])))
+                U3 = getUp(U3, rgb[2])
+                print 'Blue Up  limit:', U3
+
+
+                db.insertOneLedInfo(name=name,x=xn,y=yn,r1=r1,r2=r2,L1=L1,U1=U1,L2=L2,U2=U2,L3=L3,U3=U3,color_space=cs,mode=mode)
+                led_table = db.selectAllLed()
+                db.printAllLed()
+                # ------------------------
+            else:
+                pass
+    elif display.mouseRight:
+        x,y = display.mouseX, display.mouseY
+        r = 6
+        delete = raw_input("Delete in Rectangle[(%d,%d)--(%d,%d)] ?(y/n)" %(x-r,y-r,x+r,y+r))
+        if delete == '' or delete.upper() == 'Y' or delete.upper() == 'YES':
+            row = db.selectOneLedNearXY(x,y)
+            if row is not None:
+                print row
+                id = row[0]
+                rowCountDel = db.deleteOneLedById(id)
+                print "%d row deleted!" %rowCountDel
+                led_table = db.selectAllLed()
+
+    img.save(display)
+    # time.sleep(0.2)
+
+db.close()
